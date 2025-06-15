@@ -2,7 +2,7 @@ from pathlib import Path
 from models.mri_model import load_mri_model, predict_mri
 
 # Resolve backend root (one level up from services/)
-BACKEND_ROOT = Path(__file__).resolve().parents[1]
+BACKEND_ROOT = Path(__file__).resolve().parents[1]   
 
 # Cache
 _cache_mri = {}
