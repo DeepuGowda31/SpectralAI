@@ -64,11 +64,11 @@ const LandingPage = () => {
               </div>
               <div className="pt-6 flex items-center text-black dark:text-slate-400 text-sm">
                 <div className="flex -space-x-2 mr-3">
-                  <div className="h-8 w-8 rounded-full bg-blue-600 flex items-center justify-center text-xs font-medium text-white">JD</div>
-                  <div className="h-8 w-8 rounded-full bg-green-600 flex items-center justify-center text-xs font-medium text-white">SL</div>
-                  <div className="h-8 w-8 rounded-full bg-amber-600 flex items-center justify-center text-xs font-medium text-white">RK</div>
+                  <div className="h-8 w-8 rounded-full bg-blue-600 flex items-center justify-center text-xs font-medium text-white">DG</div>
+                  <div className="h-8 w-8 rounded-full bg-green-600 flex items-center justify-center text-xs font-medium text-white">SR</div>
+                  <div className="h-8 w-8 rounded-full bg-amber-600 flex items-center justify-center text-xs font-medium text-white">SW</div>
                 </div>
-                Trusted by 5,000+ medical professionals worldwide
+                CodeBlooded by Deepak, Srinivas, Shovin
               </div>
             </div>
             <div className="hidden md:block relative">
@@ -84,7 +84,7 @@ const LandingPage = () => {
           <div className="text-center mb-12">
             <h2 className="text-3xl font-bold tracking-tight mb-2">Advanced Features</h2>
             <p className="text-slate-600 max-w-2xl mx-auto">
-              MediVision AI combines cutting-edge technology with medical expertise to deliver unparalleled diagnostic assistance.
+              Spectral AI combines cutting-edge technology with medical expertise to deliver unparalleled diagnostic assistance.
             </p>
           </div>
           <div className="grid md:grid-cols-3 gap-6">
@@ -121,8 +121,8 @@ const LandingPage = () => {
               },
               {
                 icon: <Database className="h-6 w-6 text-indigo-600" />,
-                title: "Historical Analysis",
-                desc: "Compare current results with patient history to identify changes and trends over time.",
+                title: "Chat with Reports",
+                desc: "Ask questions, get answers and understand your reports like never before.",
                 bg: "bg-indigo-50"
               }
             ].map(({ icon, title, desc, bg }, i) => (
@@ -156,7 +156,7 @@ const LandingPage = () => {
                 Ready to Transform Your Diagnostic Workflow?
               </h2>
               <p className="text-slate-600 mb-8 max-w-xl mx-auto">
-                Join thousands of medical professionals already using MediVision AI to improve accuracy and save time.
+                Join thousands of medical professionals already using Spectral AI to improve accuracy and save time.
               </p>
               <Button
                 asChild
@@ -212,7 +212,7 @@ const LandingPage = () => {
             <div className="text-center mb-12">
               <h2 className="text-3xl font-bold tracking-tight mb-2">What Our Users Say</h2>
               <p className="text-slate-600 max-w-2xl mx-auto">
-                Hear from our satisfied users about how MediVision AI has transformed their diagnostic processes.
+                Hear from our satisfied users about how Spectral AI has transformed their diagnostic processes.
               </p>
             </div>
           </div>

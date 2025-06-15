@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { Routes, Route } from 'react-router-dom';
+import { Routes, Route, Navigate } from 'react-router-dom';
+import { SignedIn, SignedOut, RedirectToSignIn } from '@clerk/clerk-react';
 import LandingPage from './LandingPage';
 import UploadPage from './UploadPage';
 import ResultPage from './ResultPage';
@@ -8,6 +9,7 @@ import Footer from './components/Footer';
 import Contact from './Contact';
 import ResultChatPage from './ResultChatPage';
 import DoctorSearchPage from './DoctorSearchPage';
+import LoginPage from './components/LoginPage';
 
 function App() {
   // Global state for selected image type and processed data
@@ -20,28 +22,69 @@ function App() {
       <main className="flex-grow">
         <Routes>
           <Route path="/" element={<LandingPage />} />
-          <Route 
-            path="/upload" 
+          <Route path="/sign-in/*" element={<LoginPage />} />
+          
+          {/* Protected Routes */}
+          <Route
+            path="/upload"
             element={
-              <UploadPage 
-                selectedImageType={selectedImageType} 
-                setSelectedImageType={setSelectedImageType} 
-                setProcessedData={setProcessedData} 
-              />
-            } 
+              <>
+                <SignedIn>
+                  <UploadPage 
+                    selectedImageType={selectedImageType} 
+                    setSelectedImageType={setSelectedImageType} 
+                    setProcessedData={setProcessedData} 
+                  />
+                </SignedIn>
+                <SignedOut>
+                  <RedirectToSignIn />
+                </SignedOut>
+              </>
+            }
           />
-          <Route 
-            path="/results" 
+          <Route
+            path="/results"
             element={
-              <ResultPage 
-                processedData={processedData} 
-                selectedImageType={selectedImageType} 
-              />
-            } 
+              <>
+                <SignedIn>
+                  <ResultPage 
+                    processedData={processedData} 
+                    selectedImageType={selectedImageType} 
+                  />
+                </SignedIn>
+                <SignedOut>
+                  <RedirectToSignIn />
+                </SignedOut>
+              </>
+            }
           />
-          <Route path="/resultchat" element={<ResultChatPage />} />
-          <Route path="/search-doctor" element={<DoctorSearchPage />} />
-          <Route path='/contact' element={<Contact/>} />
+          <Route
+            path="/resultchat"
+            element={
+              <>
+                <SignedIn>
+                  <ResultChatPage />
+                </SignedIn>
+                <SignedOut>
+                  <RedirectToSignIn />
+                </SignedOut>
+              </>
+            }
+          />
+          <Route
+            path="/search-doctor"
+            element={
+              <>
+                <SignedIn>
+                  <DoctorSearchPage />
+                </SignedIn>
+                <SignedOut>
+                  <RedirectToSignIn />
+                </SignedOut>
+              </>
+            }
+          />
+          <Route path="/contact" element={<Contact />} />
         </Routes>
       </main>
       <Footer />

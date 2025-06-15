@@ -1,4 +1,4 @@
-from fastapi import FastAPI, UploadFile, File, HTTPException, Path
+from fastapi import FastAPI, UploadFile, File, HTTPException, Path, Form
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 import shutil
@@ -6,11 +6,9 @@ from contextlib import asynccontextmanager
 import os
 from services.xray_service import process_xray, init_xray_model
 from pydantic import BaseModel
-from typing import List, Optional
+from typing import List, Optional, Tuple
 from fastapi import FastAPI, Query
 import httpx
-from typing import List, Tuple
-from dotenv import load_dotenv
 import io
 import re
 import numpy as np
@@ -23,6 +21,18 @@ from botocore.exceptions import ClientError
 import smtplib
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
+from rag_chain_retriever import load_documents, split_documents, create_vector_store, setup_conversational_rag
+from transformers import AutoModelForImageClassification, AutoFeatureExtractor
+import torch
+from langchain.text_splitter import RecursiveCharacterTextSplitter
+from langchain_community.embeddings import OpenAIEmbeddings
+from langchain_community.vectorstores import FAISS
+from langchain_google_genai import ChatGoogleGenerativeAI
+from langchain_core.prompts import ChatPromptTemplate
+from langchain.chains import ConversationalRetrievalChain
+from langchain.memory import ConversationBufferMemory
+from datetime import datetime
+from dotenv import load_dotenv
 
 # Load environment variables
 load_dotenv()
@@ -418,7 +428,7 @@ async def generate_report_ct3d(file: UploadFile = File(...)):
 
             Output example 
             Condition Detected: Tumor
-            The AI analysis of your聚焦: 3D CT scan of the brain indicates a high probability of a tumor, with a confidence score of 92.00%. This suggests there may be an abnormal mass or growth
+            The AI analysis of your 聚焦: 3D CT scan of the brain indicates a high probability of a tumor, with a confidence score of 92.00%. This suggests there may be an abnormal mass or growth
             present in the scanned region. 3D CT scans allow doctors to view detailed cross-sectional images of internal tissues, making it easier to identify potential issues like 
             tumors. While this result is a strong indicator, it is not a confirmed diagnosis. Further testing, such as an MRI or biopsy, may be required. 
             Disclaimer: This is an AI-generated summary. Please consult a certified doctor or radiologist for medical confirmation and advice.
@@ -704,11 +714,94 @@ async def search_doctors(location: str, specialty: str = ""):
 
     return doctors
 
+# Initialize RAG components
+embeddings = OpenAIEmbeddings()
+text_splitter = RecursiveCharacterTextSplitter(chunk_size=1000, chunk_overlap=200)
+llm = ChatGoogleGenerativeAI(
+    model="gemini-2.0-flash",
+    google_api_key=os.getenv("GOOGLE_API_KEY"),
+    temperature=0.5
+)
+
+# Store for vector stores
+vector_stores = {}
+
 class ChatRequest(BaseModel):
     message: str
+    report: Optional[str] = None
+
+class LiveChatRequest(BaseModel):
+    message: str
+
+def setup_rag_chain(report_text):
+    """Set up RAG chain for a specific report."""
+    try:
+        # Split the report into chunks
+        chunks = text_splitter.split_text(report_text)
+        
+        # Create vector store
+        vector_store = FAISS.from_texts(chunks, embeddings)
+        
+        # Create memory
+        memory = ConversationBufferMemory(
+            memory_key="chat_history",
+            return_messages=True,
+            output_key='answer'
+        )
+        
+        # Create prompt template
+        prompt = ChatPromptTemplate.from_template("""
+        You are a medical report assistant. Use the following context to answer questions about the medical report.
+        If you don't know the answer, say so. Don't make up information.
+        
+        Context:
+        {context}
+        
+        Chat History:
+        {chat_history}
+        
+        Human: {question}
+        Assistant: """)
+        
+        # Create chain
+        qa_chain = ConversationalRetrievalChain.from_llm(
+            llm=llm,
+            retriever=vector_store.as_retriever(),
+            memory=memory,
+            combine_docs_chain_kwargs={"prompt": prompt},
+            return_source_documents=True
+        )
+        
+        return qa_chain
+    except Exception as e:
+        print(f"Error setting up RAG chain: {e}")
+        return None
 
 @app.post("/chat_with_report/")
 async def chat_with_report(request: ChatRequest):
+    try:
+        if not request.report:
+            # Handle general queries without report context
+            return {"response": "Please provide a medical report to chat about."}
+        
+        # Get or create RAG chain for this report
+        if request.report not in vector_stores:
+            qa_chain = setup_rag_chain(request.report)
+            if qa_chain:
+                vector_stores[request.report] = qa_chain
+            else:
+                return {"response": "Error processing the report. Please try again."}
+        
+        # Get response from RAG chain
+        response = vector_stores[request.report]({"question": request.message})
+        
+        return {"response": response['answer']}
+    except Exception as e:
+        print(f"Error in chat_with_report: {e}")
+        return {"response": "Sorry, I encountered an error. Please try again."}
+
+@app.post("/live_chat/")
+async def live_chat(request: LiveChatRequest):
     user_message = request.message.lower()
     if "upload" in user_message and "image" in user_message:
         reply = (

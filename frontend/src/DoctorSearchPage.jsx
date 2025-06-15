@@ -12,6 +12,7 @@ import {
   Loader2,
   Map as MapIcon,
   Calendar,
+  CheckCircle2,
 } from "lucide-react";
 import { Dialog, Transition } from "@headlessui/react";
 import { useNavigate } from "react-router-dom";
@@ -38,6 +39,9 @@ const DoctorSearchPage = ({ defaultSpecialty = "" }) => {
   const [formLoading, setFormLoading] = useState(false);
   const doctorsPerPage = 6;
   const navigate = useNavigate();
+
+  // Get today's date for minimum date in calendar
+  const today = new Date().toISOString().split("T")[0];
 
   const paginatedDoctors = doctors.slice(
     (currentPage - 1) * doctorsPerPage,
@@ -368,110 +372,134 @@ const DoctorSearchPage = ({ defaultSpecialty = "" }) => {
                   </Dialog.Title>
                   <div className="mt-4">
                     {formSuccess ? (
-                      <div className="text-center">
-                        <p className="text-green-600 dark:text-green-400 font-medium mb-4">
-                          Appointment booked successfully! A confirmation email has been sent to {formData.patient_email}.
+                      <div className="bg-gradient-to-br from-green-50 to-teal-50 dark:from-green-900/50 dark:to-teal-900/50 p-6 rounded-xl shadow-lg text-center animate-fade-in">
+                        <CheckCircle2 className="mx-auto text-green-500 dark:text-green-400 mb-4" size={48} />
+                        <h4 className="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-2">
+                          Appointment Confirmed!
+                        </h4>
+                        <p className="text-gray-600 dark:text-gray-300 mb-4">
+                          Your appointment with {selectedDoctor?.name} has been successfully booked. A confirmation email has been sent to <span className="font-medium">{formData.patient_email}</span>.
                         </p>
                         <Button
                           onClick={closeModal}
-                          className="w-full bg-blue-600 hover:bg-blue-700"
+                          className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 rounded-lg transition-all"
                         >
                           Back to Search
                         </Button>
                       </div>
                     ) : (
-                      <form onSubmit={handleFormSubmit} className="space-y-4">
-                        <div>
-                          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                            Full Name
-                          </label>
-                          <Input
-                            name="patient_name"
-                            value={formData.patient_name}
-                            onChange={handleFormChange}
-                            placeholder="Enter your full name"
-                            className="mt-1"
-                            required
-                          />
-                        </div>
-                        <div>
-                          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                            Gender
-                          </label>
-                          <select
-                            name="patient_gender"
-                            value={formData.patient_gender}
-                            onChange={handleFormChange}
-                            className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-                            required
-                          >
-                            <option value="">Select gender</option>
-                            <option value="Male">Male</option>
-                            <option value="Female">Female</option>
-                            <option value="Other">Other</option>
-                          </select>
-                        </div>
-                        <div>
-                          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                            Email
-                          </label>
-                          <Input
-                            name="patient_email"
-                            type="email"
-                            value={formData.patient_email}
-                            onChange={handleFormChange}
-                            placeholder="Enter your email"
-                            className="mt-1"
-                            required
-                          />
-                        </div>
-                        <div>
-                          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                            Appointment Date
-                          </label>
-                          <Input
-                            name="appointment_date"
-                            type="date"
-                            value={formData.appointment_date}
-                            onChange={handleFormChange}
-                            className="mt-1"
-                            required
-                          />
-                        </div>
-                        <div>
-                          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                            Appointment Time
-                          </label>
-                          <Input
-                            name="appointment_time"
-                            type="time"
-                            value={formData.appointment_time}
-                            onChange={handleFormChange}
-                            className="mt-1"
-                            required
-                          />
-                        </div>
-                        {formError && (
-                          <p className="text-red-600 dark:text-red-400 text-sm">{formError}</p>
-                        )}
-                        <div className="mt-6 flex gap-4">
-                          <Button
-                            type="submit"
-                            disabled={formLoading}
-                            className="flex-1 flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700"
-                          >
-                            {formLoading && <Loader2 className="animate-spin" size={18} />}
-                            Book Appointment
-                          </Button>
-                          <Button
-                            type="button"
-                            onClick={closeModal}
-                            className="flex-1 bg-gray-300 dark:bg-gray-600 hover:bg-gray-400 dark:hover:bg-gray-500"
-                          >
-                            Cancel
-                          </Button>
-                        </div>
-                      </form>
+                      <div className="bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-gray-700 dark:to-gray-600 p-6 rounded-xl shadow-lg">
+                        <form onSubmit={handleFormSubmit} className="space-y-4">
+                          <div>
+                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
+                              Full Name
+                            </label>
+                            <div className="relative">
+                              <Input
+                                name="patient_name"
+                                value={formData.patient_name}
+                                onChange={handleFormChange}
+                                placeholder="Enter your full name"
+                                className="w-full pl-10 pr-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all"
+                                required
+                              />
+                              <UserSearch className="absolute top-1/2 left-3 -translate-y-1/2 text-gray-400" size={18} />
+                            </div>
+                          </div>
+                          <div>
+                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
+                              Gender
+                            </label>
+                            <div className="relative">
+                              <select
+                                name="patient_gender"
+                                value={formData.patient_gender}
+                                onChange={handleFormChange}
+                                className="w-full pl-10 pr-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 appearance-none transition-all"
+                                required
+                              >
+                                <option value="">Select gender</option>
+                                <option value="Male">Male</option>
+                                <option value="Female">Female</option>
+                                <option value="Other">Other</option>
+                              </select>
+                              <UserSearch className="absolute top-1/2 left-3 -translate-y-1/2 text-gray-400" size={18} />
+                            </div>
+                          </div>
+                          <div>
+                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
+                              Email
+                            </label>
+                            <div className="relative">
+                              <Input
+                                name="patient_email"
+                                type="email"
+                                value={formData.patient_email}
+                                onChange={handleFormChange}
+                                placeholder="Enter your email"
+                                className="w-full pl-10 pr-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all"
+                                required
+                              />
+                              <Mail className="absolute top-1/2 left-3 -translate-y-1/2 text-gray-400" size={18} />
+                            </div>
+                          </div>
+                          <div>
+                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
+                              Appointment Date
+                            </label>
+                            <div className="relative">
+                              <Input
+                                name="appointment_date"
+                                type="date"
+                                value={formData.appointment_date}
+                                onChange={handleFormChange}
+                                min={today}
+                                className="w-full pl-10 pr-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all"
+                                required
+                              />
+                              <Calendar className="absolute top-1/2 left-3 -translate-y-1/2 text-gray-400" size={18} />
+                            </div>
+                          </div>
+                          <div>
+                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
+                              Appointment Time
+                            </label>
+                            <div className="relative">
+                              <Input
+                                name="appointment_time"
+                                type="time"
+                                value={formData.appointment_time}
+                                onChange={handleFormChange}
+                                className="w-full pl-10 pr-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all"
+                                required
+                              />
+                              <Calendar className="absolute top-1/2 left-3 -translate-y-1/2 text-gray-400" size={18} />
+                            </div>
+                          </div>
+                          {formError && (
+                            <p className="text-red-600 dark:text-red-400 text-sm font-medium bg-red-50 dark:bg-red-900/50 p-2 rounded-lg">
+                              {formError}
+                            </p>
+                          )}
+                          <div className="mt-6 flex gap-4">
+                            <Button
+                              type="submit"
+                              disabled={formLoading}
+                              className="flex-1 flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 rounded-lg transition-all"
+                            >
+                              {formLoading && <Loader2 className="animate-spin" size={18} />}
+                              Book Appointment
+                            </Button>
+                            <Button
+                              type="button"
+                              onClick={closeModal}
+                              className="flex-1 bg-gray-300 dark:bg-gray-600 hover:bg-gray-400 dark:hover:bg-gray-500 text-gray-900 dark:text-gray-100 font-semibold py-2 rounded-lg transition-all"
+                            >
+                              Cancel
+                            </Button>
+                          </div>
+                        </form>
+                      </div>
                     )}
                   </div>
                 </Dialog.Panel>

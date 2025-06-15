@@ -1,8 +1,9 @@
-import React, { useRef, useState } from 'react';
+import React, { useRef, useState, useEffect } from 'react';
 import { pdf } from '@react-pdf/renderer';
 import { saveAs } from 'file-saver';
 import ReportPDF from './components/ReportPDF';
 import { useNavigate } from 'react-router-dom';
+import axios from 'axios';
 
 import {
   Card,
@@ -41,6 +42,13 @@ const ReportCard = ({ report }) => {
   const cardRef = useRef(null);
   const [openDialog, setOpenDialog] = useState(false);
 
+  // Store the detailed report in localStorage when it's available
+  useEffect(() => {
+    if (detailedReport) {
+      localStorage.setItem('currentReport', detailedReport);
+    }
+  }, [detailedReport]);
+
   const getConfidenceColor = (score) => {
     if (score >= 85) return 'text-green-600';
     if (score >= 70) return 'text-amber-600';
@@ -70,6 +78,21 @@ const ReportCard = ({ report }) => {
       });
     } else {
       alert('Sharing not supported in this browser.');
+    }
+  };
+
+  const handleChatWithReport = async () => {
+    try {
+      // Send the detailed report to the backend for RAG processing
+      await axios.post('http://127.0.0.1:8000/process_report/', {
+        report: detailedReport
+      });
+      // Navigate to the chat page
+      navigate('/resultchat');
+    } catch (error) {
+      console.error('Error processing report:', error);
+      // Still navigate to chat page even if processing fails
+      navigate('/resultchat');
     }
   };
 
@@ -265,8 +288,8 @@ const ReportCard = ({ report }) => {
 
         {/* Chat with Report Button */}
         <Button
-          variant="secondary"
-          onClick={() => navigate('/resultchat')}
+          variant="outline"
+          onClick={handleChatWithReport}
           className="ml-auto"
         >
           <MessageSquare className="mr-2 h-4 w-4" /> Chat with Report
