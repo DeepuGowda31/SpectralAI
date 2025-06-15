@@ -1,7 +1,7 @@
 # test_xray.py
  
 import os
-import sys
+import sys 
 sys.path.append(os.path.abspath("backend"))
 from services.xray_service import init_xray_model, process_xray
 
