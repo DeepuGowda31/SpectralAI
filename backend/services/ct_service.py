@@ -5,7 +5,7 @@ from models.ct_model import load_ct_model, predict_ct
 
 # Cache
 _ct_models = {}
-
+ 
 # Initialize
 def init_ct_models(device: str = "cpu") -> None:
     """
